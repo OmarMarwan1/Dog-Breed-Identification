@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+tensorflow
+tensorflow_hub
+tf_keras
+python-multipart
+numpy
+Pillow

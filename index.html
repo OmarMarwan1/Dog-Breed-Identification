@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dog breed identification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #15130f;
+    --panel: #1e1a14;
+    --panel-2: #241f18;
+    --border: #322b21;
+    --text: #f2ead9;
+    --text-muted: #a99d89;
+    --accent: #d1a954;
+    --accent-dim: rgba(209,169,84,0.14);
+    --good: #83a873;
+    --bad: #c1614f;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    padding: 48px 20px 80px;
+    background: radial-gradient(circle at 50% -10%, #221d15 0%, var(--bg) 45%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+
+  .page{
+    width: 100%;
+    max-width: 960px;
+  }
+
+  header{
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  header h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  header p{
+    color: var(--text-muted);
+    margin: 0 0 18px;
+    font-size: 1rem;
+  }
+
+  .model-strip{
+    display: inline-flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .model-strip span{
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.82rem;
+  }
+
+  .model-strip strong{
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .grid{
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 760px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .card h2{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin: 0 0 6px;
+  }
+
+  .card .hint{
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 20px;
+  }
+
+  /* Upload card */
+  .dropzone{
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .dropzone:hover, .dropzone.drag{
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .dropzone svg{
+    opacity: 0.7;
+    margin-bottom: 10px;
+  }
+
+  .dropzone p{
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .dropzone p.filename{
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  #imageInput{ display: none; }
+
+  #preview{
+    display: none;
+    max-width: 100%;
+    margin-top: 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  button.predict{
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--accent);
+    color: #1a1710;
+    border: none;
+    border-radius: 10px;
+    transition: filter 0.15s ease, transform 0.05s ease;
+  }
+
+  button.predict:hover{ filter: brightness(1.08); }
+  button.predict:active{ transform: scale(0.99); }
+  button.predict:disabled{ opacity: 0.6; cursor: not-allowed; }
+
+  .result{
+    margin-top: 22px;
+    display: none;
+  }
+
+  .result.show{ display: block; }
+
+  .result .breed-name{
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .confidence-row{
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .confidence-track{
+    height: 8px;
+    border-radius: 100px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .confidence-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #e8c87d);
+    border-radius: 100px;
+    transition: width 0.6s ease;
+  }
+
+  .status-line{
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .status-line.error{ color: var(--bad); }
+
+  /* Breed directory card */
+  .search-box{
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .search-box input{
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.92rem;
+  }
+
+  .search-box input:focus{
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .search-box svg{
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.55;
+  }
+
+  .breed-count{
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-bottom: 12px;
+  }
+
+  .breed-count strong{ color: var(--text); }
+
+  .breed-list{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .breed-list::-webkit-scrollbar{ width: 6px; }
+  .breed-list::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 10px; }
+
+  .breed-chip{
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 0.84rem;
+  }
+
+  .breed-chip mark{
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-radius: 3px;
+  }
+
+  .no-match{
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    padding: 8px 2px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Dog breed identification</h1>
+    <p>Upload a photo and the model will tell you which of its 120 known breeds it looks like.</p>
+    <div class="model-strip">
+      <span>Model: <strong>EfficientNetV2B0</strong></span>
+      <span>Classes: <strong>120 breeds</strong></span>
+      <span>Task: <strong>image classification</strong></span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Upload & predict -->
+    <section class="card">
+      <h2>Identify a photo</h2>
+      <p class="hint">Drop an image below or choose a file to get a prediction.</p>
+
+      <div class="dropzone" id="dropzone">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 16V4M12 4L7 9M12 4l5 5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p id="dropzoneLabel">Drag an image here, or click to browse</p>
+      </div>
+      <input type="file" id="imageInput" accept="image/*">
+
+      <img id="preview" src="#" alt="Selected dog photo">
+
+      <button class="predict" id="predictBtn" onclick="predictBreed()">Predict breed</button>
+
+      <div class="status-line" id="statusLine"></div>
+
+      <div class="result" id="result">
+        <p class="breed-name" id="breedName"></p>
+        <div class="confidence-row">
+          <span>Confidence</span>
+          <span id="confidenceValue">0%</span>
+        </div>
+        <div class="confidence-track">
+          <div class="confidence-fill" id="confidenceFill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Breed directory -->
+    <section class="card">
+      <h2>Breed directory</h2>
+      <p class="hint">Search the 120 breeds the model was trained to recognize.</p>
+
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="breedSearch" placeholder="Search breed names, e.g. terrier, retriever...">
+      </div>
+
+      <p class="breed-count"><strong id="matchCount">120</strong> of 120 breeds shown</p>
+
+      <div class="breed-list" id="breedList"></div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  const rawBreeds = ['affenpinscher', 'afghan_hound', 'african_hunting_dog', 'airedale',
+    'american_staffordshire_terrier', 'appenzeller',
+    'australian_terrier', 'basenji', 'basset', 'beagle',
+    'bedlington_terrier', 'bernese_mountain_dog',
+    'black-and-tan_coonhound', 'blenheim_spaniel', 'bloodhound',
+    'bluetick', 'border_collie', 'border_terrier', 'borzoi',
+    'boston_bull', 'bouvier_des_flandres', 'boxer',
+    'brabancon_griffon', 'briard', 'brittany_spaniel', 'bull_mastiff',
+    'cairn', 'cardigan', 'chesapeake_bay_retriever', 'chihuahua',
+    'chow', 'clumber', 'cocker_spaniel', 'collie',
+    'curly-coated_retriever', 'dandie_dinmont', 'dhole', 'dingo',
+    'doberman', 'english_foxhound', 'english_setter',
+    'english_springer', 'entlebucher', 'eskimo_dog',
+    'flat-coated_retriever', 'french_bulldog', 'german_shepherd',
+    'german_short-haired_pointer', 'giant_schnauzer',
+    'golden_retriever', 'gordon_setter', 'great_dane',
+    'great_pyrenees', 'greater_swiss_mountain_dog', 'groenendael',
+    'ibizan_hound', 'irish_setter', 'irish_terrier',
+    'irish_water_spaniel', 'irish_wolfhound', 'italian_greyhound',
+    'japanese_spaniel', 'keeshond', 'kelpie', 'kerry_blue_terrier',
+    'komondor', 'kuvasz', 'labrador_retriever', 'lakeland_terrier',
+    'leonberg', 'lhasa', 'malamute', 'malinois', 'maltese_dog',
+    'mexican_hairless', 'miniature_pinscher', 'miniature_poodle',
+    'miniature_schnauzer', 'newfoundland', 'norfolk_terrier',
+    'norwegian_elkhound', 'norwich_terrier', 'old_english_sheepdog',
+    'otterhound', 'papillon', 'pekinese', 'pembroke', 'pomeranian',
+    'pug', 'redbone', 'rhodesian_ridgeback', 'rottweiler',
+    'saint_bernard', 'saluki', 'samoyed', 'schipperke',
+    'scotch_terrier', 'scottish_deerhound', 'sealyham_terrier',
+    'shetland_sheepdog', 'shih-tzu', 'siberian_husky', 'silky_terrier',
+    'soft-coated_wheaten_terrier', 'staffordshire_bullterrier',
+    'standard_poodle', 'standard_schnauzer', 'sussex_spaniel',
+    'tibetan_mastiff', 'tibetan_terrier', 'toy_poodle', 'toy_terrier',
+    'vizsla', 'walker_hound', 'weimaraner', 'welsh_springer_spaniel',
+    'west_highland_white_terrier', 'whippet',
+    'wire-haired_fox_terrier', 'yorkshire_terrier'];
+
+  // Turn "german_short-haired_pointer" into "German short-haired pointer"
+  function formatBreed(raw){
+    const words = raw.replace(/_/g, ' ');
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  }
+
+  const breeds = rawBreeds.map(formatBreed).sort((a, b) => a.localeCompare(b));
+
+  const breedListEl = document.getElementById('breedList');
+  const matchCountEl = document.getElementById('matchCount');
+  const searchInput = document.getElementById('breedSearch');
+
+  function highlight(name, query){
+    if(!query) return name;
+    const idx = name.toLowerCase().indexOf(query.toLowerCase());
+    if(idx === -1) return name;
+    return name.slice(0, idx) + '<mark>' + name.slice(idx, idx + query.length) + '</mark>' + name.slice(idx + query.length);
+  }
+
+  function renderBreeds(query = ''){
+    const q = query.trim().toLowerCase();
+    const matches = q ? breeds.filter(b => b.toLowerCase().includes(q)) : breeds;
+
+    matchCountEl.textContent = matches.length;
+
+    if(matches.length === 0){
+      breedListEl.innerHTML = '<p class="no-match">No breed matches "' + query + '". Try a shorter search.</p>';
+      return;
+    }
+
+    breedListEl.innerHTML = matches
+      .map(b => '<span class="breed-chip">' + highlight(b, query) + '</span>')
+      .join('');
+  }
+
+  renderBreeds();
+  searchInput.addEventListener('input', e => renderBreeds(e.target.value));
+
+  // Upload handling
+  const imageInput = document.getElementById('imageInput');
+  const preview = document.getElementById('preview');
+  const dropzone = document.getElementById('dropzone');
+  const dropzoneLabel = document.getElementById('dropzoneLabel');
+  const resultEl = document.getElementById('result');
+  const statusLine = document.getElementById('statusLine');
+
+  dropzone.addEventListener('click', () => imageInput.click());
+
+  ['dragenter', 'dragover'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('drag'); })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('drag'); })
+  );
+  dropzone.addEventListener('drop', e => {
+    if(e.dataTransfer.files.length){
+      imageInput.files = e.dataTransfer.files;
+      handleFile(imageInput.files[0]);
+    }
+  });
+
+  imageInput.addEventListener('change', () => {
+    if(imageInput.files.length) handleFile(imageInput.files[0]);
+  });
+
+  function handleFile(file){
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    dropzoneLabel.textContent = file.name;
+    dropzoneLabel.classList.add('filename');
+    resultEl.classList.remove('show');
+    statusLine.textContent = '';
+    statusLine.classList.remove('error');
+  }
+
+  async function predictBreed(){
+    if(imageInput.files.length === 0){
+      statusLine.textContent = 'Choose an image first.';
+      statusLine.classList.add('error');
+      return;
+    }
+
+    const btn = document.getElementById('predictBtn');
+    btn.disabled = true;
+    statusLine.classList.remove('error');
+    statusLine.textContent = 'Analyzing...';
+    resultEl.classList.remove('show');
+
+    const formData = new FormData();
+    formData.append('file', imageInput.files[0]);
+
+    try{
+      const response = await fetch('/predict', { method: 'POST', body: formData });
+      if(!response.ok) throw new Error('Server responded with ' + response.status);
+      const data = await response.json();
+
+      const confPercentage = (data.confidence * 100).toFixed(2);
+      document.getElementById('breedName').textContent = formatBreed(data.predicted_breed);
+      document.getElementById('confidenceValue').textContent = confPercentage + '%';
+      document.getElementById('confidenceFill').style.width = confPercentage + '%';
+
+      resultEl.classList.add('show');
+      statusLine.textContent = '';
+    }catch(err){
+      statusLine.textContent = 'Could not reach the server. Check that the API is running.';
+      statusLine.classList.add('error');
+    }finally{
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
