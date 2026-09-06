@@ -109,7 +109,8 @@ Accepts a multipart form upload and returns a breed prediction.
 - [ ] Add top-3 predictions instead of just the top-1
 - [ ] Add automated tests for the `/predict` endpoint
 - [ ] Containerize with Docker for easier deployment
-**NOTE:** the index.html was made by Claude because I don't have experience in developing web pages
+
+## NOTE: the index.html was made by Claude because I don't have experience in developing web pages
 
 ## License
 
