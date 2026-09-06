@@ -96,16 +96,14 @@ async def get_webpage():
 async def predict_dog_breed(file: UploadFile = File(...)):
     image_bytes = await file.read()
     processed_image = prepare_image(image_bytes)
-
+    
     predictions = model.predict(processed_image)
     predicted_class_index = np.argmax(predictions[0])
-    confidence = np.max(predictions[0])
-
+    confidence = float(np.max(predictions[0]))
+    
     predicted_breed = class_names[predicted_class_index]
-    confidence_percentage = round(float(confidence) * 100, 2)
-
+    
     return {
-        "filename": file.filename,
-        "breed": predicted_breed,
-        "confidence": confidence_percentage
+        "predicted_breed": predicted_breed,
+        "confidence": confidence
     }
