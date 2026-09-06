@@ -110,8 +110,9 @@ Accepts a multipart form upload and returns a breed prediction.
 - [ ] Add automated tests for the `/predict` endpoint
 - [ ] Containerize with Docker for easier deployment
 
-## NOTE: the index.html was made by Claude because I don't have experience in developing web pages
 
 ## License
 
 No license specified yet — add one (e.g. MIT) if you want others to reuse this freely.
+
+## NOTE: the index.html was made by Claude because I don't have experience in developing web pages
