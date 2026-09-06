@@ -9,6 +9,15 @@ from fastapi.responses import HTMLResponse
 
 # 1-create the FastAPI app
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 2-load the trained model
 model = tf_keras.models.load_model(
