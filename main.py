@@ -12,7 +12,7 @@ app = FastAPI()
 
 # 2-load the trained model
 model = tf_keras.models.load_model(
-    'models/20263609/06/26-151417-full_dog_breed_effectivenetv2b0.h5',
+    '26-151417-full_dog_breed_effectivenetv2b0.h5',
     custom_objects={'KerasLayer': hub.KerasLayer}
 )
 print("Model loaded successfully!")
