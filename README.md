@@ -113,6 +113,4 @@ Accepts a multipart form upload and returns a breed prediction.
 
 ## License
 
-No license specified yet — add one (e.g. MIT) if you want others to reuse this freely.
-
-## NOTE: the index.html was made by Claude because I don't have experience in developing web pages
+MIT license
